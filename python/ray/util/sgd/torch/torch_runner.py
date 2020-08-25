@@ -27,6 +27,12 @@ except ImportError:
     logger.debug("apex is not installed.")
     pass
 
+# Dataset will provide us with a list of tuples but we
+# need two lists.
+def format_batch(batch):
+    features, targets = zip(*batch)
+    return torch.cat(features), torch.cat(targets)
+
 
 class TorchRunner:
     """Manages a PyTorch model for training."""
@@ -201,16 +207,10 @@ class TorchRunner:
         with self.timers.record("train_epoch"):
             if iterator is None:
                 iterator = iter(self.train_loader)
-            else:
-                # Dataset will provide us with a list of tuples but we
-                # need two lists.
-                def format_batch(batch):
-                    features, targets = zip(*batch)
-                    return torch.cat(features), torch.cat(targets)
-
-                iterator = map(format_batch, iterator)
+            
             if num_steps:
                 iterator = itertools.islice(iterator, num_steps)
+            info["epoch"] = self.epochs
             train_stats = self.training_operator.train_epoch(iterator, info)
 
         self.epochs += 1
