@@ -77,7 +77,7 @@ class DistributedTorchRunner(TorchRunner):
         if self.wrap_ddp:
             # This needs to happen after apex
             training_models = [
-                DistributedDataParallel(model, device_ids=device_ids)
+                DistributedDataParallel(model, find_unused_parameters=True, device_ids=device_ids)
                 for model in self.models
             ]
         self.training_operator = self.training_operator_cls(
